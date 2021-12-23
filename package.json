@@ -1,0 +1,22 @@
+{
+  "name": "node-binary-compression",
+  "version": "1.0.0",
+  "description": "",
+  "main": "poc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JulienBrgs/node-binary-compression.git"
+  },
+  "author": "Julien Bourgeois",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JulienBrgs/node-binary-compression/issues"
+  },
+  "homepage": "https://github.com/JulienBrgs/node-binary-compression#readme",
+  "dependencies": {
+    "node-lzw": "^0.3.1"
+  }
+}
