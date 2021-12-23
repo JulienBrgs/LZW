@@ -1,53 +1,49 @@
-// fs = require('fs');
-// debugData = (data) => {
-// 	console.log(`DATA = "${data}"`);
-// }
-// debugBuffer = (buffer) => {
-// 	var tmp = "";
-// 	buffer.forEach(b => {
-// 		if (tmp != "") tmp += " ";
-// 		tmp += b.toString(16).toUpperCase();
-// 	});
-// 	console.log(`BUFFER = ${tmp}`);
-// 
-// fs.readFile('sample.txt', 'binary', (error, data) => {
-// 	if (error) return console.log(error);
-// 	debugData(data);
-// 	const buffer = Buffer.from(data, 'ascii');
-// 	debugBuffer(buffer);
-// 	//var hexvalue = buffer.toString('hex');
-// 	//console.log(hexvalue);
-// });
+const path = require('path');
+const fs = require("fs");
+const lzw = require("node-lzw");
 
-var fs = require('fs');
-var lzw = require("node-lzw");
+const config = {
+    algorithmes: [
+        { name: "LZW", encode: lzw.encode, decode: lzw.decode },
+    ],
+    samples_dir: "samples",
+    samples: [
+        { file: "sample.exe", type: "Executable" },
+        { file: "sample.png", type: "Image" },
+        { file: "sample.txt", type: "Texte" }
+    ]
+};
 
-fs.readFile('./samples/sample.txt', 'binary', (error, data) => {
-// fs.readFile('./samples/sample.exe', 'binary', (error, data) => {
-// fs.readFile('./samples/sample.png', 'binary', (error, data) => {
-	if (error) return console.log(error);
+readSample = async (sample) => {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path.join(config.samples_dir, sample), 'binary', (error, data) => {
+            if (error) reject(error);
+            else resolve(data);
+        });
+    });
+};
 
-	console.log("[DATA]");
-	console.log(`Prévisualisation	: ${(data.length <= 255) ? data : "Impossible de prévisualiser plus de 255 octets ..."}`);
-	console.log(`Taille			: ${data.length} octets`);
-	console.log(``);
-
-	var buffer = data;
-
-	// Encoding
-	var encode = lzw.encode(buffer);
-	console.log("[ENCODE]");
-	console.log(`Buffer			: ${buffer}`);
-	console.log(`Prévisualisation	: ${(encode.length <= 255) ? encode : "Impossible de prévisualiser plus de 255 octets ..."}`);
-	console.log(`Taille			: ${encode.length} octets`);
-	console.log(`Ratio de compression	: ${((1 - (encode.length / data.length)) * 100).toFixed(2)} %`);
-	console.log(``);
-
-	// Decoding
-	var decode = lzw.decode(encode);
-	console.log("[DECODE]");
-	console.log(`Buffer			: ${encode}`);
-	console.log(`Prévisualisation	: ${(decode.length <= 255) ? decode : "Impossible de prévisualiser plus de 255 octets ..."}`);
-	console.log(`Taille			: ${decode.length} octets`);
-	console.log(`Vérification		: ${(data.length == decode.length) ? "OK" : "KO"}`);
+config.samples.forEach(async (sample) => {
+    await readSample(sample.file)
+        .then(data => {
+            console.log(`[SAMPLE] ${sample.type} : ${sample.file}`);
+            console.log(`[DATA]`);
+            console.log(`Prévisualisation	: ${(data.length <= 255) ? data : "Impossible de prévisualiser plus de 255 octets ..."}`);
+            console.log(`Taille			: ${data.length} octets`);
+            console.log(`------------------------------------------------------`);
+            config.algorithmes.forEach(algo => {
+                console.log(`Algorithme     : ${algo.name}`);
+                const encode = algo.encode(data);
+                console.log(`Prévisualisation	: ${(encode.length <= 255) ? encode : "Impossible de prévisualiser plus de 255 octets ..."}`);
+                console.log(`Taille			: ${encode.length} octets`);
+                console.log(`Ratio de compression	: ${((1 - (encode.length / data.length)) * 100).toFixed(2)} %`);
+                console.log(`------------------------------------------------------`);
+            });
+            console.log(``);
+        })
+        .catch(error => {
+            throw new Error(error)
+        });
 });
+
+// console.log(config);
