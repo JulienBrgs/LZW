@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/JulienBrgs/node-binary-compression#readme",
   "dependencies": {
-    "node-lzw": "^0.3.1"
+    "colors": "^1.4.0"
   }
 }

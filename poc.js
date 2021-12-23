@@ -1,10 +1,17 @@
 const path = require('path');
-const fs = require("fs");
-const lzw = require("node-lzw");
+const fs = require('fs');
+const colors = require('colors/safe');
+
+// Algorithmes
+const lzw = require("./algorithmes/lzw.js");
+const rle = require("./algorithmes/rle.js");
+// const huffman = require("./algorithmes/huffman.js");
 
 const config = {
     algorithmes: [
-        { name: "LZW", encode: lzw.encode, decode: lzw.decode },
+        { name: "Lempel-Ziv Welch", encode: lzw.encode, decode: lzw.decode },
+        { name: "Run Length Encoding", encode: rle.encode, decode: rle.decode },
+        // { name: "Huffman", encode: huffman.encode, decode: huffman.decode },
     ],
     samples_dir: "samples",
     samples: [
@@ -23,27 +30,24 @@ readSample = async (sample) => {
     });
 };
 
-config.samples.forEach(async (sample) => {
+config.samples.forEach(async sample => {
     await readSample(sample.file)
         .then(data => {
-            console.log(`[SAMPLE] ${sample.type} : ${sample.file}`);
-            console.log(`[DATA]`);
+            console.log(`[${colors.magenta("SAMPLE")}] ${sample.type} (${sample.file})`);
             console.log(`Prévisualisation	: ${(data.length <= 255) ? data : "Impossible de prévisualiser plus de 255 octets ..."}`);
             console.log(`Taille			: ${data.length} octets`);
-            console.log(`------------------------------------------------------`);
             config.algorithmes.forEach(algo => {
-                console.log(`Algorithme     : ${algo.name}`);
-                const encode = algo.encode(data);
+                console.log(`------------------------------------------------------`);
+                console.log(`[${colors.blue("ALGORITHME")}] ${algo.name}`);
+                let encode = algo.encode(data);
                 console.log(`Prévisualisation	: ${(encode.length <= 255) ? encode : "Impossible de prévisualiser plus de 255 octets ..."}`);
                 console.log(`Taille			: ${encode.length} octets`);
-                console.log(`Ratio de compression	: ${((1 - (encode.length / data.length)) * 100).toFixed(2)} %`);
-                console.log(`------------------------------------------------------`);
+                console.log(`Taux de compression	: ${((1 - (encode.length / data.length)) * 100).toFixed(2)} %`);
             });
+            console.log(``);
             console.log(``);
         })
         .catch(error => {
             throw new Error(error)
         });
 });
-
-// console.log(config);
